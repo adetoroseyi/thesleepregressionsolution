@@ -160,13 +160,17 @@ function FAQItem({ question, answer }) {
   )
 }
 
-// Product Card Component
+// Product Card Component - NOW WITH REAL IMAGES
 function ProductCard({ product, onBuy }) {
   return (
     <div className="card flex flex-col h-full">
-      {/* Image placeholder */}
-      <div className="h-48 bg-gradient-to-br from-brand-teal/20 to-brand-coral/20 flex items-center justify-center relative">
-        <div className="text-6xl">📘</div>
+      {/* Product Image */}
+      <div className="h-48 bg-gradient-to-br from-brand-teal/10 to-brand-coral/10 relative overflow-hidden">
+        <img 
+          src={product.image} 
+          alt={product.title}
+          className="w-full h-full object-cover"
+        />
         {product.badge && (
           <span className={`absolute top-3 right-3 badge ${product.badgeColor} text-white`}>
             {product.badge}
@@ -450,7 +454,7 @@ export default function SalesPage() {
       </section>
       
       
-      {/* ============ TESTIMONIALS SECTION ============ */}
+      {/* ============ TESTIMONIALS SECTION - NOW WITH REAL IMAGES ============ */}
       <section className="bg-white section-padding">
         <div className="container-narrow mx-auto">
           <h2 className="heading-lg text-center mb-12">
@@ -469,9 +473,11 @@ export default function SalesPage() {
                   "{testimonial.quote}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-brand-teal/20 flex items-center justify-center text-brand-teal font-bold">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
                   <div>
                     <p className="font-semibold text-brand-charcoal">{testimonial.name}</p>
                     <p className="text-sm text-brand-charcoal/60">{testimonial.role}</p>
@@ -532,15 +538,17 @@ export default function SalesPage() {
       </section>
       
       
-      {/* ============ ABOUT SECTION ============ */}
+      {/* ============ ABOUT SECTION - NOW WITH REAL IMAGE ============ */}
       <section className="bg-brand-cream section-padding">
         <div className="container-narrow mx-auto">
           <div className="max-w-3xl mx-auto">
             <div className="flex flex-col md:flex-row gap-8 items-center">
-              {/* Author image placeholder */}
-              <div className="w-32 h-32 rounded-full bg-brand-teal/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-4xl">👩</span>
-              </div>
+              {/* Author image - NOW REAL */}
+              <img 
+                src="/images/author-marli.jpg" 
+                alt="Marli Benjamin"
+                className="w-32 h-32 rounded-full object-cover flex-shrink-0"
+              />
               
               <div>
                 <h3 className="text-xl font-bold mb-2">About Marli Benjamin</h3>
