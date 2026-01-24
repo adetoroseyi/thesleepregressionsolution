@@ -132,7 +132,7 @@ const faqs = [
   },
   {
     question: "What if it doesn't work for my family?",
-    answer: "That's exactly why we offer a 60-day money-back guarantee. If you implement the DREAM Method consistently for 14 days and don't see improvement, simply email us for a full refund. No questions asked, no hard feelings.",
+    answer: "We offer a 14-Day Results Guarantee. Implement the DREAM Method consistently for 14 days using the included Sleep Tracker. If you don't see significant improvement, send us your completed tracker and we'll refund you in full. We ask for the tracker because the method only works if you actually use it—and when you do, it works.",
   },
   {
     question: "What format are the ebooks?",
@@ -284,7 +284,7 @@ export default function HighConvertingSalesPage() {
               <span className="text-brand-green">✓</span> Works in 5 Nights
             </span>
             <span className="flex items-center gap-2 font-semibold text-brand-charcoal">
-              <span className="text-brand-green">✓</span> 60-Day Guarantee
+              <span className="text-brand-green">✓</span> 14-Day Results Guarantee
             </span>
           </div>
           
@@ -309,7 +309,7 @@ export default function HighConvertingSalesPage() {
               Get the Complete Solution — ${bundle.price}
             </button>
             <p className="mt-3 text-sm text-brand-charcoal/50">
-              Instant access • 60-day money-back guarantee • One-time payment
+              Instant access • 14-day results guarantee • One-time payment
             </p>
           </div>
           
@@ -580,7 +580,7 @@ export default function HighConvertingSalesPage() {
                   <span className="text-brand-green">✓</span> Instant PDF Download
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-brand-green">✓</span> 60-Day Guarantee
+                  <span className="text-brand-green">✓</span> 14-Day Guarantee
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-brand-green">✓</span> Lifetime Access
@@ -734,16 +734,20 @@ export default function HighConvertingSalesPage() {
               <span className="text-4xl">🛡️</span>
             </div>
             <h3 className="text-2xl font-bold text-brand-charcoal mb-4">
-              60-Day Money-Back Guarantee
+              14-Day Results Guarantee
             </h3>
-            <p className="text-brand-charcoal/70 leading-relaxed max-w-xl mx-auto">
-              I'm so confident the DREAM Method will work for your family that I'm offering a 
-              full 60-day money-back guarantee. If you implement the method consistently for 
-              14 days and don't see significant improvement, simply email me for a complete 
-              refund. No questions asked. No hard feelings.
+            <p className="text-brand-charcoal/70 leading-relaxed max-w-xl mx-auto mb-4">
+              I'm confident the DREAM Method will work for your family. Implement the method 
+              consistently for 14 days using the included Sleep Tracker. If you don't see 
+              significant improvement, send us your completed tracker and we'll refund you in full.
+            </p>
+            <p className="text-brand-charcoal/60 text-sm max-w-lg mx-auto">
+              Why do we ask for the tracker? Because the method only works if you actually use it. 
+              The tracker takes 2 minutes per day and ensures you're implementing correctly—which 
+              means you WILL see results.
             </p>
             <p className="text-brand-green font-medium mt-4">
-              You have nothing to lose—and peaceful nights to gain.
+              Fair for you. Fair for us. And it works.
             </p>
           </div>
           
@@ -793,7 +797,7 @@ export default function HighConvertingSalesPage() {
               </li>
               <li className="flex items-center gap-3">
                 <span className="text-brand-coral">✓</span>
-                <span>60-day money-back guarantee</span>
+                <span>14-day results guarantee</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="text-brand-coral">✓</span>
