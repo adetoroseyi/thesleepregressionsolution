@@ -1,6 +1,13 @@
 import { Resend } from 'resend'
+import { createClient } from '@supabase/supabase-js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+
+// Initialize Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 export async function POST(request) {
   try {
@@ -14,7 +21,24 @@ export async function POST(request) {
       )
     }
 
-    // Send the welcome email with the checklist
+    // 1. Save subscriber to Supabase
+    const { error: dbError } = await supabaseAdmin
+      .from('email_subscribers')
+      .upsert({
+        email,
+        first_name: firstName,
+        source: 'lead_magnet_checklist',
+        subscribed_at: new Date().toISOString(),
+      }, {
+        onConflict: 'email',
+      })
+
+    if (dbError) {
+      console.error('Supabase error:', dbError)
+      // Don't fail the whole request if DB save fails
+    }
+
+    // 2. Send the welcome email with the checklist
     const { data, error } = await resend.emails.send({
       from: 'Marli <hello@thesleepregressionsolution.com>',
       to: email,
@@ -82,8 +106,7 @@ export async function POST(request) {
             <p>You're receiving this because you signed up for the Sleep Regression Survival Checklist.</p>
             <p>
               <a href="https://thesleepregressionsolution.com" style="color: #4A9BA8;">Visit Website</a> • 
-              <a href="https://thesleepregressionsolution.com/privacy" style="color: #4A9BA8;">Privacy Policy</a> • 
-              <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #4A9BA8;">Unsubscribe</a>
+              <a href="https://thesleepregressionsolution.com/privacy" style="color: #4A9BA8;">Privacy Policy</a>
             </p>
             <p>© 2025 The Sleep Regression Solution</p>
           </div>
@@ -100,22 +123,6 @@ export async function POST(request) {
         { status: 500 }
       )
     }
-
-    // Optional: Store subscriber in Supabase
-    // This will be implemented when Supabase is set up
-    /*
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-    
-    await supabase.from('email_subscribers').insert({
-      email,
-      first_name: firstName,
-      source: 'lead_magnet_checklist',
-      subscribed_at: new Date().toISOString(),
-    })
-    */
 
     return Response.json({ 
       success: true, 
