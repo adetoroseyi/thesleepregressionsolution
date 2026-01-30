@@ -251,10 +251,36 @@ function GuaranteeBadge() {
 // MAIN PAGE COMPONENT
 // =============================================================================
 export default function HighConvertingSalesPage() {
+  const [isLoading, setIsLoading] = useState(false)
   
-  const handleBuy = (productId) => {
-    console.log('Buying product:', productId)
-    alert(`Stripe checkout coming soon!\n\nProduct: ${productId}\n\nThis will redirect to secure checkout.`)
+  const handleBuy = async (productId) => {
+    setIsLoading(true)
+    
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId }),
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong')
+      }
+      
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
   
   const scrollToProducts = () => {
