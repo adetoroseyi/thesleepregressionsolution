@@ -11,23 +11,23 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Product to PDF mapping
+// Product to PDF mapping - UPDATED WITH CORRECT FILENAMES
 const PRODUCT_PDFS = {
   '18-month': {
     name: 'The 18-Month Sleep Regression Survival Guide',
-    url: process.env.EBOOK_18_MONTH_URL || 'https://thesleepregressionsolution.com/downloads/18-month-sleep-regression-guide.pdf',
+    url: 'https://thesleepregressionsolution.com/downloads/18_month_sleep_regression_survival_guide.pdf',
   },
   '2-year': {
     name: 'The 2-Year Sleep Regression Blueprint',
-    url: process.env.EBOOK_2_YEAR_URL || 'https://thesleepregressionsolution.com/downloads/2-year-sleep-regression-blueprint.pdf',
+    url: 'https://thesleepregressionsolution.com/downloads/2_year_sleep_regression_blueprint.pdf',
   },
   '3-year': {
     name: 'The 3-Year Sleep Regression Playbook',
-    url: process.env.EBOOK_3_YEAR_URL || 'https://thesleepregressionsolution.com/downloads/3-year-sleep-regression-playbook.pdf',
+    url: 'https://thesleepregressionsolution.com/downloads/3_year_sleep_regression_playbook.pdf',
   },
   'working-parent': {
     name: 'The Working Parent Sleep Survival Guide',
-    url: process.env.EBOOK_WORKING_PARENT_URL || 'https://thesleepregressionsolution.com/downloads/working-parent-sleep-guide.pdf',
+    url: 'https://thesleepregressionsolution.com/downloads/working_parent_sleep_survival_guide.pdf',
   },
   'bundle': {
     name: 'The Complete Sleep Regression Solution (All 4 Guides)',
@@ -79,54 +79,73 @@ async function handleSuccessfulPayment(session) {
   console.log(`Processing payment for ${customerEmail}, product: ${productId}`)
 
   // 1. Save/update customer in database
-  const { data: customer, error: customerError } = await supabaseAdmin
-    .from('customers')
-    .upsert({
-      email: customerEmail,
-      first_name: customerName,
-      stripe_customer_id: session.customer,
-      updated_at: new Date().toISOString(),
-    }, {
-      onConflict: 'email',
-    })
-    .select()
-    .single()
+  let customer = null
+  try {
+    const { data, error: customerError } = await supabaseAdmin
+      .from('customers')
+      .upsert({
+        email: customerEmail,
+        first_name: customerName,
+        stripe_customer_id: session.customer,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'email',
+      })
+      .select()
+      .single()
 
-  if (customerError) {
-    console.error('Error saving customer:', customerError)
+    if (customerError) {
+      console.error('Error saving customer:', customerError)
+    } else {
+      customer = data
+    }
+  } catch (err) {
+    console.error('Customer save error:', err)
   }
 
   // 2. Record the purchase
-  const { error: purchaseError } = await supabaseAdmin
-    .from('purchases')
-    .insert({
-      customer_id: customer?.id,
-      product_id: productId,
-      stripe_checkout_session_id: session.id,
-      stripe_payment_intent_id: session.payment_intent,
-      amount: amountPaid,
-      currency: session.currency,
-      status: 'completed',
-    })
+  try {
+    const { error: purchaseError } = await supabaseAdmin
+      .from('purchases')
+      .insert({
+        customer_id: customer?.id,
+        product_id: productId,
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent,
+        amount: amountPaid,
+        currency: session.currency,
+        status: 'completed',
+      })
 
-  if (purchaseError) {
-    console.error('Error recording purchase:', purchaseError)
+    if (purchaseError) {
+      console.error('Error recording purchase:', purchaseError)
+    }
+  } catch (err) {
+    console.error('Purchase save error:', err)
   }
 
   // 3. Send delivery email with ebook(s)
   await sendDeliveryEmail(customerEmail, customerName, productId)
 
   // 4. Update purchase record to mark email as sent
-  await supabaseAdmin
-    .from('purchases')
-    .update({ email_sent: true })
-    .eq('stripe_checkout_session_id', session.id)
+  try {
+    await supabaseAdmin
+      .from('purchases')
+      .update({ email_sent: true })
+      .eq('stripe_checkout_session_id', session.id)
+  } catch (err) {
+    console.error('Email sent update error:', err)
+  }
 }
 
 async function sendDeliveryEmail(email, firstName, productId) {
   const product = PRODUCT_PDFS[productId]
   
-  let downloadLinks = ''
+  if (!product) {
+    console.error('Unknown product ID:', productId)
+    return
+  }
+  
   let productListHtml = ''
 
   if (product.isBundle) {
@@ -209,12 +228,18 @@ async function sendDeliveryEmail(email, firstName, productId) {
   `
 
   try {
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: 'Marli <hello@thesleepregressionsolution.com>',
       to: email,
       subject: `🎉 Your ${product.isBundle ? 'Sleep Regression Guides Are' : 'Sleep Regression Guide Is'} Ready to Download!`,
       html: emailHtml,
     })
+    
+    if (error) {
+      console.error('Resend error:', error)
+      throw error
+    }
+    
     console.log(`Delivery email sent to ${email}`)
   } catch (error) {
     console.error('Error sending delivery email:', error)
