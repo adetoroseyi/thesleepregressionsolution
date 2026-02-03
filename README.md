@@ -76,5 +76,6 @@ This project is configured to deploy automatically via Vercel when you push to G
 Proprietary - All rights reserved.
 
 Trigger deploy
+Trigger fresh deploy
 
 
