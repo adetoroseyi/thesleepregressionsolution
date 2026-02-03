@@ -11,10 +11,14 @@ const supabaseAdmin = createClient(
 
 export async function POST(request) {
   try {
-    const { email, firstName } = await request.json()
+    const body = await request.json()
+    const { email, firstName } = body
+
+    console.log('Subscribe request received:', { email, firstName: firstName ? 'provided' : 'missing' })
 
     // Validate input
     if (!email || !firstName) {
+      console.error('Validation failed: missing email or firstName')
       return Response.json(
         { error: 'Email and first name are required' },
         { status: 400 }
@@ -22,23 +26,34 @@ export async function POST(request) {
     }
 
     // 1. Save subscriber to Supabase
-    const { error: dbError } = await supabaseAdmin
-      .from('email_subscribers')
-      .upsert({
-        email,
-        first_name: firstName,
-        source: 'lead_magnet_checklist',
-        subscribed_at: new Date().toISOString(),
-      }, {
-        onConflict: 'email',
-      })
+    try {
+      const { data: dbData, error: dbError } = await supabaseAdmin
+        .from('email_subscribers')
+        .upsert({
+          email,
+          first_name: firstName,
+          source: 'lead_magnet_checklist',
+          subscribed_at: new Date().toISOString(),
+        }, {
+          onConflict: 'email',
+        })
 
-    if (dbError) {
-      console.error('Supabase error:', dbError)
-      // Don't fail the whole request if DB save fails
+      if (dbError) {
+        console.error('Supabase save error:', dbError)
+      } else {
+        console.log('Subscriber saved to Supabase:', email)
+      }
+    } catch (dbErr) {
+      console.error('Supabase exception:', dbErr.message)
     }
 
-    // 2. Send the welcome email with the checklist
+    // 2. Determine checklist URL
+    const checklistUrl = process.env.CHECKLIST_PDF_URL || 'https://www.thesleepregressionsolution.com/downloads/sleep-regression-checklist.pdf'
+    console.log('Using checklist URL:', checklistUrl)
+
+    // 3. Send the welcome email with the checklist
+    console.log('Attempting to send email via Resend to:', email)
+    
     const { data, error } = await resend.emails.send({
       from: 'Marli <hello@thesleepregressionsolution.com>',
       to: email,
@@ -63,11 +78,11 @@ export async function POST(request) {
             
             <div style="background: #FDF8F5; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
               <p style="font-weight: bold; font-size: 18px; color: #2C3E50; margin-bottom: 16px;">📥 Download Your Checklist</p>
-              <a href="${process.env.CHECKLIST_PDF_URL || 'https://thesleepregressionsolution.com/downloads/sleep-regression-checklist.pdf'}" 
+              <a href="${checklistUrl}" 
                  style="display: inline-block; background: #E07A5F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">
                 Download PDF Now →
               </a>
-              <p style="font-size: 12px; color: #666; margin-top: 12px;">If the button doesn't work, copy this link: ${process.env.CHECKLIST_PDF_URL || 'https://thesleepregressionsolution.com/downloads/sleep-regression-checklist.pdf'}</p>
+              <p style="font-size: 12px; color: #666; margin-top: 12px;">If the button doesn't work, copy this link: ${checklistUrl}</p>
             </div>
             
             <h2 style="color: #4A9BA8; font-size: 20px; margin-top: 32px;">Here's what to do next:</h2>
@@ -87,7 +102,7 @@ export async function POST(request) {
             <p>The checklist is a great starting point, but if you want the complete system — including the full DREAM Method, age-specific scripts, and printable trackers — check out our comprehensive guides:</p>
             
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://thesleepregressionsolution.com" 
+              <a href="https://www.thesleepregressionsolution.com" 
                  style="display: inline-block; background: #4A9BA8; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold;">
                 View the Complete Guides →
               </a>
@@ -105,8 +120,8 @@ export async function POST(request) {
           <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; font-size: 12px; color: #666; text-align: center;">
             <p>You're receiving this because you signed up for the Sleep Regression Survival Checklist.</p>
             <p>
-              <a href="https://thesleepregressionsolution.com" style="color: #4A9BA8;">Visit Website</a> • 
-              <a href="https://thesleepregressionsolution.com/privacy" style="color: #4A9BA8;">Privacy Policy</a>
+              <a href="https://www.thesleepregressionsolution.com" style="color: #4A9BA8;">Visit Website</a> • 
+              <a href="https://www.thesleepregressionsolution.com/privacy" style="color: #4A9BA8;">Privacy Policy</a>
             </p>
             <p>© 2025 The Sleep Regression Solution</p>
           </div>
@@ -117,12 +132,14 @@ export async function POST(request) {
     })
 
     if (error) {
-      console.error('Resend error:', error)
+      console.error('Resend API error:', JSON.stringify(error))
       return Response.json(
         { error: 'Failed to send email. Please try again.' },
         { status: 500 }
       )
     }
+
+    console.log('Email sent successfully to:', email, 'messageId:', data?.id)
 
     return Response.json({ 
       success: true, 
@@ -130,7 +147,7 @@ export async function POST(request) {
     })
 
   } catch (error) {
-    console.error('Subscribe error:', error)
+    console.error('Subscribe error:', error.message, error.stack)
     return Response.json(
       { error: 'An unexpected error occurred' },
       { status: 500 }
