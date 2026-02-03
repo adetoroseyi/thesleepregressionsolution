@@ -1,39 +1,42 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import crypto from 'crypto'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Initialize Supabase admin client
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Product to PDF mapping - UPDATED WITH CORRECT FILENAMES
-const PRODUCT_PDFS = {
+// Product to Supabase Storage file mapping
+const PRODUCT_FILES = {
   '18-month': {
     name: 'The 18-Month Sleep Regression Survival Guide',
-    url: 'https://thesleepregressionsolution.com/downloads/18_month_sleep_regression_survival_guide.pdf',
+    storagePath: 'ebooks/18_month_sleep_regression_survival_guide.pdf',
   },
   '2-year': {
     name: 'The 2-Year Sleep Regression Blueprint',
-    url: 'https://thesleepregressionsolution.com/downloads/2_year_sleep_regression_blueprint.pdf',
+    storagePath: 'ebooks/2_year_sleep_regression_blueprint.pdf',
   },
   '3-year': {
     name: 'The 3-Year Sleep Regression Playbook',
-    url: 'https://thesleepregressionsolution.com/downloads/3_year_sleep_regression_playbook.pdf',
+    storagePath: 'ebooks/3_year_sleep_regression_playbook.pdf',
   },
   'working-parent': {
     name: 'The Working Parent Sleep Survival Guide',
-    url: 'https://thesleepregressionsolution.com/downloads/working_parent_sleep_survival_guide.pdf',
+    storagePath: 'ebooks/working_parent_sleep_survival_guide.pdf',
   },
   'bundle': {
     name: 'The Complete Sleep Regression Solution (All 4 Guides)',
     isBundle: true,
   },
 }
+
+// 15 days in seconds
+const DOWNLOAD_EXPIRY_SECONDS = 15 * 24 * 60 * 60
 
 export async function POST(request) {
   const body = await request.text()
@@ -55,15 +58,16 @@ export async function POST(request) {
     )
   }
 
-  // Handle the event
+  console.log(`Received Stripe event: ${event.type}`)
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
 
     try {
       await handleSuccessfulPayment(session)
+      console.log('Payment handled successfully')
     } catch (error) {
-      console.error('Error handling payment:', error)
-      // Still return 200 to prevent Stripe from retrying
+      console.error('Error handling payment:', error.message, error.stack)
     }
   }
 
@@ -74,14 +78,24 @@ async function handleSuccessfulPayment(session) {
   const customerEmail = session.customer_details?.email
   const customerName = session.customer_details?.name?.split(' ')[0] || 'there'
   const productId = session.metadata?.product_id
-  const amountPaid = session.amount_total / 100 // Convert from cents
+  const amountPaid = session.amount_total / 100
 
-  console.log(`Processing payment for ${customerEmail}, product: ${productId}`)
+  console.log(`Payment received: ${customerEmail}, product: ${productId}, amount: $${amountPaid}`)
 
-  // 1. Save/update customer in database
+  if (!customerEmail) {
+    console.error('No customer email found in session')
+    return
+  }
+
+  if (!productId) {
+    console.error('No product ID found in session metadata')
+    return
+  }
+
+  // 1. Save/update customer
   let customer = null
   try {
-    const { data, error: customerError } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('customers')
       .upsert({
         email: customerEmail,
@@ -94,18 +108,20 @@ async function handleSuccessfulPayment(session) {
       .select()
       .single()
 
-    if (customerError) {
-      console.error('Error saving customer:', customerError)
+    if (error) {
+      console.error('Customer save error:', error)
     } else {
       customer = data
+      console.log('Customer saved:', customer.id)
     }
   } catch (err) {
-    console.error('Customer save error:', err)
+    console.error('Customer save exception:', err)
   }
 
-  // 2. Record the purchase
+  // 2. Record purchase
+  let purchaseId = null
   try {
-    const { error: purchaseError } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('purchases')
       .insert({
         customer_id: customer?.id,
@@ -116,59 +132,103 @@ async function handleSuccessfulPayment(session) {
         currency: session.currency,
         status: 'completed',
       })
+      .select()
+      .single()
 
-    if (purchaseError) {
-      console.error('Error recording purchase:', purchaseError)
+    if (error) {
+      console.error('Purchase save error:', error)
+    } else {
+      purchaseId = data.id
+      console.log('Purchase recorded:', purchaseId)
     }
   } catch (err) {
-    console.error('Purchase save error:', err)
+    console.error('Purchase save exception:', err)
   }
 
-  // 3. Send delivery email with ebook(s)
-  await sendDeliveryEmail(customerEmail, customerName, productId)
+  // 3. Generate secure download links
+  const downloadLinks = await generateDownloadLinks(customerEmail, productId, purchaseId)
 
-  // 4. Update purchase record to mark email as sent
-  try {
-    await supabaseAdmin
-      .from('purchases')
-      .update({ email_sent: true })
-      .eq('stripe_checkout_session_id', session.id)
-  } catch (err) {
-    console.error('Email sent update error:', err)
+  if (!downloadLinks || downloadLinks.length === 0) {
+    console.error('Failed to generate download links')
+    return
+  }
+
+  // 4. Send delivery email
+  await sendDeliveryEmail(customerEmail, customerName, productId, downloadLinks)
+
+  // 5. Mark email as sent
+  if (purchaseId) {
+    try {
+      await supabaseAdmin
+        .from('purchases')
+        .update({ email_sent: true })
+        .eq('id', purchaseId)
+    } catch (err) {
+      console.error('Email sent update error:', err)
+    }
   }
 }
 
-async function sendDeliveryEmail(email, firstName, productId) {
-  const product = PRODUCT_PDFS[productId]
-  
+async function generateDownloadLinks(email, productId, purchaseId) {
+  const links = []
+  const product = PRODUCT_FILES[productId]
+
   if (!product) {
     console.error('Unknown product ID:', productId)
-    return
+    return links
   }
-  
-  let productListHtml = ''
 
-  if (product.isBundle) {
-    // Bundle - include all 4 ebooks
-    const allProducts = ['18-month', '2-year', '3-year', 'working-parent']
-    productListHtml = allProducts.map(id => {
-      const p = PRODUCT_PDFS[id]
-      return `
-        <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-          <p style="font-weight: bold; margin: 0 0 8px 0;">${p.name}</p>
-          <a href="${p.url}" style="display: inline-block; background: #4A9BA8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold;">Download PDF →</a>
-        </div>
-      `
-    }).join('')
-  } else {
-    // Single product
-    productListHtml = `
-      <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-        <p style="font-weight: bold; margin: 0 0 8px 0;">${product.name}</p>
-        <a href="${product.url}" style="display: inline-block; background: #4A9BA8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold;">Download PDF →</a>
-      </div>
-    `
+  // Get list of files to generate links for
+  const filesToLink = product.isBundle
+    ? ['18-month', '2-year', '3-year', 'working-parent']
+    : [productId]
+
+  for (const fileId of filesToLink) {
+    const fileInfo = PRODUCT_FILES[fileId]
+    
+    try {
+      // Generate a unique token
+      const token = crypto.randomBytes(32).toString('hex')
+      const expiresAt = new Date(Date.now() + DOWNLOAD_EXPIRY_SECONDS * 1000)
+
+      // Save token to database
+      await supabaseAdmin
+        .from('download_tokens')
+        .insert({
+          purchase_id: purchaseId,
+          customer_email: email,
+          product_id: fileId,
+          token: token,
+          expires_at: expiresAt.toISOString(),
+        })
+
+      // Generate the download URL using our API route
+      const downloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/download?token=${token}`
+
+      links.push({
+        name: fileInfo.name,
+        url: downloadUrl,
+        productId: fileId,
+      })
+
+      console.log(`Download link generated for ${fileId}: token=${token.substring(0, 8)}...`)
+    } catch (err) {
+      console.error(`Error generating link for ${fileId}:`, err)
+    }
   }
+
+  return links
+}
+
+async function sendDeliveryEmail(email, firstName, productId, downloadLinks) {
+  const product = PRODUCT_FILES[productId]
+
+  const productListHtml = downloadLinks.map(link => `
+    <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+      <p style="font-weight: bold; margin: 0 0 8px 0;">${link.name}</p>
+      <a href="${link.url}" style="display: inline-block; background: #4A9BA8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold;">Download PDF →</a>
+    </div>
+  `).join('')
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -192,6 +252,10 @@ async function sendDeliveryEmail(email, firstName, productId) {
         
         ${productListHtml}
         
+        <div style="background: #fff3cd; border-radius: 8px; padding: 12px 16px; margin: 16px 0;">
+          <p style="margin: 0; font-size: 14px; color: #856404;">⏰ <strong>Important:</strong> These download links expire in 15 days. Please download and save your files now.</p>
+        </div>
+        
         <div style="background: #FDF8F5; border-radius: 12px; padding: 20px; margin: 24px 0;">
           <h3 style="color: #E07A5F; margin-top: 0;">📋 Quick Start Guide</h3>
           <ol style="padding-left: 20px; margin-bottom: 0;">
@@ -205,8 +269,10 @@ async function sendDeliveryEmail(email, firstName, productId) {
         <div style="background: #f0f9f4; border-left: 4px solid #6BAA75; padding: 16px; margin: 24px 0;">
           <p style="margin: 0;"><strong>Remember:</strong> Most parents see improvement within 3-5 nights. Stay consistent, trust the process, and don't hesitate to reach out if you need support!</p>
         </div>
-        
-        <p>If you have any questions, just reply to this email. I'm here to help!</p>
+
+        <div style="background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin: 16px 0;">
+          <p style="margin: 0; font-size: 14px; color: #666;">Need to re-download? Simply reply to this email and we'll send fresh download links.</p>
+        </div>
         
         <p>
           Wishing you peaceful nights,<br>
@@ -228,21 +294,21 @@ async function sendDeliveryEmail(email, firstName, productId) {
   `
 
   try {
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'Marli <hello@thesleepregressionsolution.com>',
       to: email,
       subject: `🎉 Your ${product.isBundle ? 'Sleep Regression Guides Are' : 'Sleep Regression Guide Is'} Ready to Download!`,
       html: emailHtml,
     })
-    
+
     if (error) {
-      console.error('Resend error:', error)
+      console.error('Resend API error:', JSON.stringify(error))
       throw error
     }
-    
-    console.log(`Delivery email sent to ${email}`)
+
+    console.log(`Delivery email sent successfully to ${email}, messageId: ${data?.id}`)
   } catch (error) {
-    console.error('Error sending delivery email:', error)
+    console.error('Email send failed:', error.message || JSON.stringify(error))
     throw error
   }
 }
