@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { EMAIL_SEQUENCE, getEmailHtml } from '../../../lib/email-sequence.js'
+import { EMAIL_SEQUENCE, getEmailHtml } from '../../../../lib/email-sequence.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const supabaseAdmin = createClient(
