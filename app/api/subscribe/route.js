@@ -48,7 +48,7 @@ export async function POST(request) {
     }
 
     // 2. Determine checklist URL
-    const checklistUrl = process.env.CHECKLIST_PDF_URL || 'https://www.thesleepregressionsolution.com/downloads/sleep-regression-checklist.pdf'
+    const checklistUrl = process.env.CHECKLIST_PDF_URL || 'https://www.thesleepregressionsolution.com/free/sleep-regression-checklist.pdf'
     console.log('Using checklist URL:', checklistUrl)
 
     // 3. Send the welcome email with the checklist
