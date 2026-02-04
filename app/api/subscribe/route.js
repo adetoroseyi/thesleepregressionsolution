@@ -1,22 +1,21 @@
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-// Initialize Supabase admin client
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
   try {
     const body = await request.json()
     const { email, firstName } = body
 
     console.log('Subscribe request received:', { email, firstName: firstName ? 'provided' : 'missing' })
 
-    // Validate input
     if (!email || !firstName) {
       console.error('Validation failed: missing email or firstName')
       return Response.json(
@@ -25,7 +24,6 @@ export async function POST(request) {
       )
     }
 
-    // 1. Save subscriber to Supabase
     try {
       const { data: dbData, error: dbError } = await supabaseAdmin
         .from('email_subscribers')
@@ -47,11 +45,9 @@ export async function POST(request) {
       console.error('Supabase exception:', dbErr.message)
     }
 
-    // 2. Determine checklist URL
     const checklistUrl = process.env.CHECKLIST_PDF_URL || 'https://www.thesleepregressionsolution.com/free/sleep-regression-checklist.pdf'
     console.log('Using checklist URL:', checklistUrl)
 
-    // 3. Send the welcome email with the checklist
     console.log('Attempting to send email via Resend to:', email)
     
     const { data, error } = await resend.emails.send({
