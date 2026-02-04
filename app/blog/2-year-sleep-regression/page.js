@@ -506,10 +506,7 @@ export default function TwoYearSleepRegression() {
             <h3 className="font-bold text-brand-charcoal mb-4">Related Guides</h3>
             <ul className="space-y-2 text-brand-teal">
               <li><Link href="/blog/18-month-sleep-regression" className="hover:underline">18 Month Sleep Regression: Signs, Causes & How to Fix It</Link></li>
-              {/* Uncomment as you publish */}
-              {/* <li><Link href="/blog/2-year-old-fighting-bedtime" className="hover:underline">2 Year Old Fighting Bedtime: Scripts That Actually Work</Link></li> */}
-              {/* <li><Link href="/blog/toddler-afraid-of-dark" className="hover:underline">When Your Toddler Is Afraid of the Dark: What to Do</Link></li> */}
-              {/* <li><Link href="/blog/3-year-sleep-regression" className="hover:underline">The 3-Year Sleep Regression: Complete Guide</Link></li> */}
+              <li><Link href="/blog/3-year-sleep-regression" className="hover:underline">3 Year Sleep Regression: Nightmares, Nap Dropping & How to Cope</Link></li>
               <li className="text-brand-charcoal/50 italic">More guides coming soon — sign up for our <Link href="/free" className="text-brand-teal hover:underline">free checklist</Link> to be notified.</li>
             </ul>
           </div>
