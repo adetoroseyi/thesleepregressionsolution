@@ -3,15 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-const resend = new Resend(process.env.RESEND_API_KEY)
+export const dynamic = 'force-dynamic'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
-// Product to Supabase Storage file mapping
 const PRODUCT_FILES = {
   '18-month': {
     name: 'The 18-Month Sleep Regression Survival Guide',
@@ -35,10 +28,21 @@ const PRODUCT_FILES = {
   },
 }
 
-// 15 days in seconds
 const DOWNLOAD_EXPIRY_SECONDS = 15 * 24 * 60 * 60
 
+function getClients() {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+  return { stripe, resend, supabaseAdmin }
+}
+
 export async function POST(request) {
+  const { stripe, resend, supabaseAdmin } = getClients()
+
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
 
@@ -64,7 +68,7 @@ export async function POST(request) {
     const session = event.data.object
 
     try {
-      await handleSuccessfulPayment(session)
+      await handleSuccessfulPayment(session, supabaseAdmin, resend)
       console.log('Payment handled successfully')
     } catch (error) {
       console.error('Error handling payment:', error.message, error.stack)
@@ -74,7 +78,7 @@ export async function POST(request) {
   return Response.json({ received: true })
 }
 
-async function handleSuccessfulPayment(session) {
+async function handleSuccessfulPayment(session, supabaseAdmin, resend) {
   const customerEmail = session.customer_details?.email
   const customerName = session.customer_details?.name?.split(' ')[0] || 'there'
   const productId = session.metadata?.product_id
@@ -92,7 +96,6 @@ async function handleSuccessfulPayment(session) {
     return
   }
 
-  // 1. Save/update customer
   let customer = null
   try {
     const { data, error } = await supabaseAdmin
@@ -118,7 +121,6 @@ async function handleSuccessfulPayment(session) {
     console.error('Customer save exception:', err)
   }
 
-  // 2. Record purchase
   let purchaseId = null
   try {
     const { data, error } = await supabaseAdmin
@@ -145,18 +147,15 @@ async function handleSuccessfulPayment(session) {
     console.error('Purchase save exception:', err)
   }
 
-  // 3. Generate secure download links
-  const downloadLinks = await generateDownloadLinks(customerEmail, productId, purchaseId)
+  const downloadLinks = await generateDownloadLinks(customerEmail, productId, purchaseId, supabaseAdmin)
 
   if (!downloadLinks || downloadLinks.length === 0) {
     console.error('Failed to generate download links')
     return
   }
 
-  // 4. Send delivery email
-  await sendDeliveryEmail(customerEmail, customerName, productId, downloadLinks)
+  await sendDeliveryEmail(customerEmail, customerName, productId, downloadLinks, resend)
 
-  // 5. Mark email as sent
   if (purchaseId) {
     try {
       await supabaseAdmin
@@ -169,7 +168,7 @@ async function handleSuccessfulPayment(session) {
   }
 }
 
-async function generateDownloadLinks(email, productId, purchaseId) {
+async function generateDownloadLinks(email, productId, purchaseId, supabaseAdmin) {
   const links = []
   const product = PRODUCT_FILES[productId]
 
@@ -178,7 +177,6 @@ async function generateDownloadLinks(email, productId, purchaseId) {
     return links
   }
 
-  // Get list of files to generate links for
   const filesToLink = product.isBundle
     ? ['18-month', '2-year', '3-year', 'working-parent']
     : [productId]
@@ -187,11 +185,9 @@ async function generateDownloadLinks(email, productId, purchaseId) {
     const fileInfo = PRODUCT_FILES[fileId]
     
     try {
-      // Generate a unique token
       const token = crypto.randomBytes(32).toString('hex')
       const expiresAt = new Date(Date.now() + DOWNLOAD_EXPIRY_SECONDS * 1000)
 
-      // Save token to database
       await supabaseAdmin
         .from('download_tokens')
         .insert({
@@ -202,7 +198,6 @@ async function generateDownloadLinks(email, productId, purchaseId) {
           expires_at: expiresAt.toISOString(),
         })
 
-      // Generate the download URL using our API route
       const downloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/download?token=${token}`
 
       links.push({
@@ -220,7 +215,7 @@ async function generateDownloadLinks(email, productId, purchaseId) {
   return links
 }
 
-async function sendDeliveryEmail(email, firstName, productId, downloadLinks) {
+async function sendDeliveryEmail(email, firstName, productId, downloadLinks, resend) {
   const product = PRODUCT_FILES[productId]
 
   const productListHtml = downloadLinks.map(link => `
