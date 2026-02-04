@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import BlogSection from './BlogSection'
 
 /*
 ================================================================================
@@ -850,6 +851,12 @@ export default function HighConvertingSalesPage() {
       
       
       {/* ================================================================
+          SECTION 8.5: BLOG GUIDES - Dynamic, auto-updates from posts.js
+      ================================================================ */}
+      <BlogSection />
+      
+      
+      {/* ================================================================
           SECTION 9: GUARANTEE + FAQ - Risk reversal
           Research: Guarantees increase conversions 3-6%
       ================================================================ */}
@@ -972,6 +979,7 @@ export default function HighConvertingSalesPage() {
             </div>
             
             <div className="flex gap-6">
+              <a href="/blog" className="hover:text-white transition-colors">Blog</a>
               <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
               <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
               <a href="mailto:hello@thesleepregressionsolution.com" className="hover:text-white transition-colors">Contact</a>
