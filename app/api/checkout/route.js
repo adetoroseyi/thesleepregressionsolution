@@ -1,8 +1,7 @@
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+export const dynamic = 'force-dynamic'
 
-// Map product IDs to Stripe Price IDs
 const PRICE_IDS = {
   '18-month': 'price_1SwhEEKv9gEvbEL3WK0WcXZ5',
   '2-year': 'price_1SwhE9Kv9gEvbEL33Lw52Pza',
@@ -11,7 +10,6 @@ const PRICE_IDS = {
   'bundle': 'price_1SwhDrKv9gEvbEL3ivMTIO20',
 }
 
-// Product names for metadata
 const PRODUCT_NAMES = {
   '18-month': 'The 18-Month Sleep Regression Survival Guide',
   '2-year': 'The 2-Year Sleep Regression Blueprint',
@@ -21,10 +19,11 @@ const PRODUCT_NAMES = {
 }
 
 export async function POST(request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
   try {
     const { productId } = await request.json()
 
-    // Validate product ID
     if (!productId || !PRICE_IDS[productId]) {
       return Response.json(
         { error: 'Invalid product ID' },
@@ -34,7 +33,6 @@ export async function POST(request) {
 
     const priceId = PRICE_IDS[productId]
 
-    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -50,7 +48,6 @@ export async function POST(request) {
         product_id: productId,
         product_name: PRODUCT_NAMES[productId],
       },
-      // Collect customer email
       customer_creation: 'always',
       billing_address_collection: 'required',
     })
@@ -59,7 +56,6 @@ export async function POST(request) {
       sessionId: session.id,
       url: session.url 
     })
-
   } catch (error) {
     console.error('Checkout error:', error)
     return Response.json(
