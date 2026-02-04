@@ -1,8 +1,7 @@
 export default function sitemap() {
   const baseUrl = 'https://www.thesleepregressionsolution.com'
 
-  // Core pages
-  const staticPages = [
+  return [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -27,37 +26,17 @@ export default function sitemap() {
       changeFrequency: 'yearly',
       priority: 0.2,
     },
+    // Blog posts — uncomment as you publish:
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/blog/18-month-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/blog/18-month-nap-strike`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/blog/2-year-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/blog/2-year-old-fighting-bedtime`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/blog/3-year-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/blog/when-do-toddlers-stop-napping`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/blog/sleep-regression-ages`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/blog/toddler-afraid-of-dark`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/blog/toddler-bedtime-routine`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/blog/toddler-waking-at-night`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
   ]
-
-  // Blog posts — add new entries here as you publish
-  const blogPosts = [
-    // PRIORITY 1 — Publish these first
-    // '18-month-sleep-regression',
-    // '2-year-sleep-regression',
-    // 'how-long-does-18-month-sleep-regression-last',
-    // 'sleep-regression-ages',
-
-    // PRIORITY 2
-    // '2-year-old-fighting-bedtime',
-    // '18-month-nap-strike',
-    // 'toddler-nightmares-vs-night-terrors',
-    // 'gentle-sleep-training-dream-method',
-
-    // PRIORITY 3
-    // 'working-mom-sleep-deprivation',
-    // 'toddler-bedtime-routine-chart',
-    // '3-year-old-dropping-nap',
-    // '3-year-sleep-regression',
-  ]
-
-  const blogPages = blogPosts
-    .filter(slug => !slug.startsWith('//')) // skip commented out
-    .map(slug => ({
-      url: `${baseUrl}/blog/${slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    }))
-
-  return [...staticPages, ...blogPages]
 }
