@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+export const dynamic = 'force-dynamic'
 
 // Map product IDs to storage file paths
 const STORAGE_FILES = {
@@ -14,10 +11,14 @@ const STORAGE_FILES = {
 }
 
 export async function GET(request) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
 
-  // 1. Validate token exists
   if (!token) {
     return new Response(renderErrorPage('Missing download token', 'Please use the download link from your email.'), {
       status: 400,
@@ -26,7 +27,6 @@ export async function GET(request) {
   }
 
   try {
-    // 2. Look up token in database
     const { data: tokenData, error: tokenError } = await supabaseAdmin
       .from('download_tokens')
       .select('*')
@@ -40,7 +40,6 @@ export async function GET(request) {
       })
     }
 
-    // 3. Check if token has expired
     const now = new Date()
     const expiresAt = new Date(tokenData.expires_at)
 
@@ -54,7 +53,6 @@ export async function GET(request) {
       })
     }
 
-    // 4. Check download count
     if (tokenData.download_count >= tokenData.max_downloads) {
       return new Response(renderErrorPage(
         'Download limit reached',
@@ -65,9 +63,8 @@ export async function GET(request) {
       })
     }
 
-    // 5. Get the file from Supabase Storage
     const fileName = STORAGE_FILES[tokenData.product_id]
-    
+
     if (!fileName) {
       return new Response(renderErrorPage('File not found', 'The requested file could not be found.'), {
         status: 404,
@@ -91,15 +88,13 @@ export async function GET(request) {
       })
     }
 
-    // 6. Increment download count
     await supabaseAdmin
       .from('download_tokens')
       .update({ download_count: tokenData.download_count + 1 })
       .eq('token', token)
 
-    // 7. Return the PDF file
     const arrayBuffer = await fileData.arrayBuffer()
-    
+
     return new Response(arrayBuffer, {
       status: 200,
       headers: {
