@@ -467,11 +467,8 @@ export default function EighteenMonthSleepRegression() {
           <div className="border-t border-gray-200 pt-8 mt-12">
             <h3 className="font-bold text-brand-charcoal mb-4">Related Guides</h3>
             <ul className="space-y-2 text-brand-teal">
-              {/* Uncomment these links as you publish the posts */}
-              {/* <li><Link href="/blog/18-month-sleep-regression-how-long" className="hover:underline">How Long Does the 18 Month Sleep Regression Last? (Timeline)</Link></li> */}
-              {/* <li><Link href="/blog/18-month-nap-strike" className="hover:underline">18 Month Nap Strike: Why It Happens and What to Do</Link></li> */}
-              {/* <li><Link href="/blog/2-year-sleep-regression" className="hover:underline">The 2-Year Sleep Regression: Complete Guide</Link></li> */}
-              {/* <li><Link href="/blog/sleep-regression-ages" className="hover:underline">Sleep Regression Ages: Every Regression from 4 Months to 3 Years</Link></li> */}
+              <li><Link href="/blog/2-year-sleep-regression" className="hover:underline">2 Year Sleep Regression: Why It Happens & What to Do</Link></li>
+              <li><Link href="/blog/3-year-sleep-regression" className="hover:underline">3 Year Sleep Regression: Nightmares, Nap Dropping & How to Cope</Link></li>
               <li className="text-brand-charcoal/50 italic">More guides coming soon — sign up for our <Link href="/free" className="text-brand-teal hover:underline">free checklist</Link> to be notified.</li>
             </ul>
           </div>
