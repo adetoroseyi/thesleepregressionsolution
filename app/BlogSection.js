@@ -3,7 +3,14 @@
 import Link from 'next/link'
 import blogPosts from './blog/posts'
 
+const pillarSlugs = [
+  '18-month-sleep-regression',
+  '2-year-sleep-regression',
+  '3-year-sleep-regression',
+]
+
 export default function BlogSection() {
+  const pillarPosts = blogPosts.filter((post) => pillarSlugs.includes(post.slug))
   return (
     <section id="blog" className="py-16 md:py-24 bg-gray-50">
       <div className="max-w-6xl mx-auto px-4">
@@ -20,7 +27,7 @@ export default function BlogSection() {
 
         {/* Post Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          {blogPosts.map((post) => (
+          {pillarPosts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
@@ -53,7 +60,7 @@ export default function BlogSection() {
             href="/blog"
             className="inline-block text-brand-teal hover:text-brand-teal-dark font-semibold transition-colors"
           >
-            View all guides →
+            View all {blogPosts.length} guides →
           </Link>
         </div>
       </div>
