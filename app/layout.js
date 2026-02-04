@@ -58,10 +58,9 @@ export const metadata = {
     },
   },
 
-  // Uncomment and add your Google Search Console verification code:
-  // verification: {
-  //   google: 'your-verification-code-here',
-  // },
+  verification: {
+    google: 'n-woGhvqvhOWpIncmC8ecW4tdhBGfin7FxtXTDNbvbs',
+  },
 }
 
 // Structured data for the entire site
