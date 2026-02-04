@@ -292,8 +292,109 @@ export default function HighConvertingSalesPage() {
     document.getElementById('bundle')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // ===========================================================================
+  // SEO STRUCTURED DATA - Product & FAQ schemas for Google rich results
+  // ===========================================================================
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'The Complete Sleep Regression Solution Bundle',
+    description:
+      'Four comprehensive ebook guides covering 18-month, 2-year, 3-year sleep regressions plus a working parent edition. Uses the gentle DREAM Method.',
+    brand: { '@type': 'Brand', name: 'The Sleep Regression Solution' },
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'USD',
+      lowPrice: '24.99',
+      highPrice: '69.99',
+      offerCount: '5',
+      availability: 'https://schema.org/InStock',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '2000',
+      bestRating: '5',
+      worstRating: '1',
+    },
+    review: [
+      {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: 'Sarah K.' },
+        reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
+        reviewBody:
+          'By night 4, my daughter slept 11 hours straight for the first time ever. This method is a game-changer.',
+      },
+      {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: 'Michael T.' },
+        reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
+        reviewBody:
+          'The DREAM method actually addressed why our twins were waking. Within a week, both were sleeping through.',
+      },
+      {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: 'Jessica L.' },
+        reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5' },
+        reviewBody:
+          'The Working Parent guide gave me my career and my sanity back. Worth every penny.',
+      },
+    ],
+  }
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Is the DREAM Method a cry-it-out method?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: "No. The DREAM Method is a gentle, attachment-focused approach that works with your child's developmental needs. There is no crying it out involved.",
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How quickly will I see results from the sleep regression guides?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Most parents see significant improvement within 3-5 nights. By night 7, the majority of children are sleeping through independently.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What ages does The Sleep Regression Solution cover?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'The complete bundle covers ages 12 months through 4 years, with specific guides for 18-month, 2-year, and 3-year sleep regressions, plus a dedicated guide for working parents.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is there a money-back guarantee?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: "Yes. There is a 14-day results guarantee. Implement the method consistently using the included Sleep Tracker, and if you don't see significant improvement, send the completed tracker for a full refund.",
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What format are the sleep regression ebooks?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'All guides are instant-download PDF files that work on any device. You can also print them out. It is a one-time purchase with lifetime access.',
+        },
+      },
+    ],
+  }
+
   return (
     <main className="min-h-screen bg-white">
+
+      {/* SEO Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       
       {/* ================================================================
           SECTION 1: HERO - Specific headline + guarantee + CTA
