@@ -4,11 +4,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 // Map product IDs to Stripe Price IDs
 const PRICE_IDS = {
-  '18-month': 'price_1SvGFtQT1CuWvAqcec5DM82L',
-  '2-year': 'price_1SvGGkQT1CuWvAqcyNhAEwD9',
-  '3-year': 'price_1SvGIdQT1CuWvAqcAyAQQU0X',
-  'working-parent': 'price_1SvGKFQT1CuWvAqcdM7I61DK',
-  'bundle': 'price_1SvGMtQT1CuWvAqcZMDJd56x',
+  '18-month': 'price_1SwhEEKv9gEvbEL3WK0WcXZ5',
+  '2-year': 'price_1SwhE9Kv9gEvbEL33Lw52Pza',
+  '3-year': 'price_1SwhE3Kv9gEvbEL3pBmWe85z',
+  'working-parent': 'price_1SwhDyKv9gEvbEL3NnVmDFQh',
+  'bundle': 'price_1SwhDrKv9gEvbEL3ivMTIO20',
 }
 
 // Product names for metadata
