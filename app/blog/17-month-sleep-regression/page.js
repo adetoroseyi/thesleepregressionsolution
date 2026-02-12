@@ -401,7 +401,7 @@ export default function SeventeenMonthSleepRegression() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <Link
-                href="/shop"
+                href="/#products"
                 className="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold text-center hover:bg-teal-700 transition no-underline"
               >
                 Get the Survival Guide →
