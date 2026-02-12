@@ -401,7 +401,7 @@ export default function SeventeenMonthSleepRegression() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <Link
-                href="/#products"
+                href="/"
                 className="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold text-center hover:bg-teal-700 transition no-underline"
               >
                 Get the Survival Guide →
@@ -432,11 +432,11 @@ export default function SeventeenMonthSleepRegression() {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <Link href="/blog/18-month-sleep-regression" className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition no-underline">
+            <Link href="/blog" className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition no-underline">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">5 Signs You&apos;re in the 18-Month Sleep Regression</h3>
               <p className="text-gray-600 text-sm">How to tell if your toddler&apos;s sleep problems are a true regression — and what to do about it.</p>
             </Link>
-            <Link href="/blog/toddler-waking-at-night" className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition no-underline">
+            <Link href="/blog" className="block p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition no-underline">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Toddler Waking at Night? 7 Reasons &amp; How to Stop It</h3>
               <p className="text-gray-600 text-sm">The most common causes of toddler night waking and proven strategies to fix each one.</p>
             </Link>
