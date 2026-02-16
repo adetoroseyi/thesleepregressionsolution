@@ -1,4 +1,12 @@
-// Add new blog posts here — they'll automatically appear on the homepage and blog index
+// =============================================================================
+// BLOG POSTS — Single source of truth
+// =============================================================================
+// To add a new blog post:
+// 1. Create the folder in app/blog/your-slug/page.js
+// 2. Add an entry to this array
+// 3. That's it — blog listing, homepage BlogSection, and sitemap all update automatically
+// =============================================================================
+
 const blogPosts = [
   {
     slug: 'sleep-regression-ages',
@@ -8,6 +16,15 @@ const blogPosts = [
     category: 'Overview',
     readTime: '11 min read',
     date: '2025-02-04',
+  },
+  {
+    slug: '17-month-sleep-regression',
+    title: '17 Month Sleep Regression: Why It Happens & How to Fix It',
+    description:
+      'Is your 17 month old suddenly fighting sleep? The 17 month sleep regression is real — and fixable. Get a step-by-step plan to restore peaceful nights in 5-7 days.',
+    category: '18-Month Regression',
+    readTime: '15 min read',
+    date: '2026-02-12',
   },
   {
     slug: '18-month-sleep-regression',
@@ -90,15 +107,6 @@ const blogPosts = [
     readTime: '10 min read',
     date: '2025-02-04',
   },
-  {
-  slug: '17-month-sleep-regression',
-  title: '17 Month Sleep Regression: Why It Happens & How to Fix It',
-  description:
-    'Is your 17 month old suddenly fighting sleep? The 17 month sleep regression is real — and fixable. Get a step-by-step plan to restore peaceful nights in 5-7 days.',
-  category: '18-Month Regression',
-  readTime: '15 min read',
-  date: '2026-02-12',
-},
 ]
 
 export default blogPosts
