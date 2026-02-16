@@ -2,8 +2,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import BlogSection from './BlogSection'
 import { products, bundle } from '../lib/products'
+import { freebies } from '../lib/freebies'
 
 /*
 ================================================================================
@@ -184,6 +186,9 @@ function GuaranteeBadge() {
 // =============================================================================
 export default function HighConvertingSalesPage() {
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Only show featured products on homepage — all products visible at /products
+  const homepageProducts = products.filter(p => p.showOnHomepage)
   
   const handleBuy = async (productId) => {
     setIsLoading(true)
@@ -547,7 +552,7 @@ export default function HighConvertingSalesPage() {
           
           {/* Product Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {homepageProducts.map((product) => (
               <ProductCard 
                 key={product.id} 
                 product={product} 
@@ -556,9 +561,19 @@ export default function HighConvertingSalesPage() {
             ))}
           </div>
           
-          {/* Or Get the Bundle */}
-          <div className="text-center mt-12">
-            <p className="text-brand-charcoal/70 mb-4">
+          {/* View All + Bundle Links */}
+          <div className="text-center mt-12 space-y-4">
+            {products.length > homepageProducts.length && (
+              <div>
+                <Link
+                  href="/products"
+                  className="inline-block bg-brand-teal hover:bg-brand-teal-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+                >
+                  View All {products.length} Guides →
+                </Link>
+              </div>
+            )}
+            <p className="text-brand-charcoal/70">
               Not sure which one you need? <strong>Get all four and save {bundle.savingsPercent}%.</strong>
             </p>
             <button 
@@ -784,6 +799,36 @@ export default function HighConvertingSalesPage() {
           SECTION 8.5: BLOG GUIDES - Dynamic, auto-updates from posts.js
       ================================================================ */}
       <BlogSection />
+      
+      
+      {/* ================================================================
+          SECTION 8.6: FREE RESOURCES - Links to free downloads
+      ================================================================ */}
+      {freebies.length > 0 && (
+        <section className="py-12 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-brand-coral/5 to-brand-teal/5 rounded-2xl p-6 md:p-8">
+              <div>
+                <h3 className="text-xl font-bold text-brand-charcoal mb-1">Free Resources</h3>
+                <p className="text-brand-charcoal/60">
+                  Not ready to commit? Start with our free tools and see results tonight.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {freebies.map((freebie) => (
+                  <Link
+                    key={freebie.slug}
+                    href={freebie.url}
+                    className="inline-flex items-center gap-2 bg-white hover:bg-brand-teal hover:text-white text-brand-teal font-semibold py-3 px-6 rounded-lg border-2 border-brand-teal transition-all"
+                  >
+                    <span>🎁</span> {freebie.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
       
       
       {/* ================================================================
