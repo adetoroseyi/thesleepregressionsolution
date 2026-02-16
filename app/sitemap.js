@@ -1,4 +1,6 @@
 import blogPosts from './blog/posts'
+import { products } from '../lib/products'
+import { freebies } from '../lib/freebies'
 
 export default function sitemap() {
   const baseUrl = 'https://www.thesleepregressionsolution.com'
@@ -10,12 +12,6 @@ export default function sitemap() {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/free`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,
@@ -45,5 +41,24 @@ export default function sitemap() {
     priority: post.category === 'Overview' ? 0.7 : 0.6,
   }))
 
-  return [...staticPages, ...blogPages]
+  // Auto-generate freebie URLs from freebies.js
+  const freebiePages = freebies.map((freebie) => ({
+    url: `${baseUrl}${freebie.url}`,
+    lastModified: new Date(freebie.date),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }))
+
+  // Only include products that are marked as indexable (public product pages)
+  // Delivery/download pages are excluded from sitemap
+  const productPages = products
+    .filter((product) => product.indexable)
+    .map((product) => ({
+      url: `${baseUrl}/products/${product.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }))
+
+  return [...staticPages, ...freebiePages, ...blogPages, ...productPages]
 }
