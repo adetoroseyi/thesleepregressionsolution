@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import BlogSection from './BlogSection'
+import { products, bundle } from '../lib/products'
 
 /*
 ================================================================================
@@ -15,77 +16,6 @@ Based on validated data from:
 - Leadpages & Unbounce (Landing Page Best Practices)
 ================================================================================
 */
-
-// =============================================================================
-// PRODUCT DATA - PREMIUM PRICING
-// =============================================================================
-const products = [
-  {
-    id: '18-month',
-    title: 'The 18-Month Sleep Regression Survival Guide',
-    subtitle: 'For parents of 12-20 month olds',
-    price: 24.99,
-    image: '/images/product-18month.jpg',
-    badge: 'MOST POPULAR',
-    features: [
-      'The 5-Night Sleep Rescue Action Plan',
-      'Scripts for handling separation anxiety at bedtime',
-      'Nap transition guide (from 2 naps to 1)',
-      'Printable: Daily Sleep & Mood Tracker',
-    ],
-  },
-  {
-    id: '2-year',
-    title: 'The 2-Year Sleep Regression Blueprint',
-    subtitle: 'For parents of 2-year-olds',
-    price: 24.99,
-    image: '/images/product-2year.jpg',
-    badge: null,
-    features: [
-      'The P.E.A.C.E. Method for toddler negotiations',
-      'Scripts for "just one more story" and stall tactics',
-      'Big kid bed transition guide',
-      'Printable: Bedtime Routine Reward Chart',
-    ],
-  },
-  {
-    id: '3-year',
-    title: 'The 3-Year Sleep Regression Playbook',
-    subtitle: 'For parents of 3-4 year olds',
-    price: 24.99,
-    image: '/images/product-3year.jpg',
-    badge: null,
-    features: [
-      'The R.E.S.T. Method for dropping the last nap',
-      'Nightmare vs. night terror response scripts',
-      'Techniques for managing fears (monsters, the dark)',
-      'Printable: "My Big Kid Bed" Success Certificate',
-    ],
-  },
-  {
-    id: 'working-parent',
-    title: 'The Working Parent Sleep Survival Guide',
-    subtitle: 'For parents juggling careers + sleepless nights',
-    price: 29.99,
-    image: '/images/product-working.jpg',
-    badge: 'INCLUDES BONUS',
-    features: [
-      'The C.E.O. Method (Connect, Efficiency, Outsource)',
-      'Career protection strategies when sleep-deprived',
-      'Partner & caregiver coordination scripts',
-      'Printable: Weekend Reset Planner',
-    ],
-  },
-]
-
-const bundle = {
-  id: 'bundle',
-  title: 'The Complete Sleep Regression Solution',
-  totalValue: 104.96,
-  price: 69.99,
-  savings: 34.97,
-  savingsPercent: 33,
-}
 
 // =============================================================================
 // ENHANCED TESTIMONIALS - Specific results, locations, star ratings
@@ -629,7 +559,7 @@ export default function HighConvertingSalesPage() {
           {/* Or Get the Bundle */}
           <div className="text-center mt-12">
             <p className="text-brand-charcoal/70 mb-4">
-              Not sure which one you need? <strong>Get all four and save 33%.</strong>
+              Not sure which one you need? <strong>Get all four and save {bundle.savingsPercent}%.</strong>
             </p>
             <button 
               onClick={scrollToBundle}
@@ -960,7 +890,7 @@ export default function HighConvertingSalesPage() {
               onClick={scrollToProducts}
               className="text-brand-coral hover:text-brand-coral-dark underline"
             >
-              View individual guides from $24.99
+              View individual guides from ${Math.min(...products.map(p => p.price)).toFixed(2)}
             </button>
           </p>
         </div>
