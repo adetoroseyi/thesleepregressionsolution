@@ -90,6 +90,14 @@ const blogPosts = [
     readTime: '10 min read',
     date: '2025-02-04',
   },
+  {
+  slug: '17-month-sleep-regression',
+  title: '', // What's the title?
+  description: '', // Short description
+  category: '18-Month Regression',
+  readTime: '',
+  date: '2025-02-XX',
+},
 ]
 
 export default blogPosts
