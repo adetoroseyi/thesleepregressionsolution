@@ -1,7 +1,10 @@
+import blogPosts from './blog/posts'
+
 export default function sitemap() {
   const baseUrl = 'https://www.thesleepregressionsolution.com'
 
-  return [
+  // Static pages
+  const staticPages = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -12,6 +15,12 @@ export default function sitemap() {
       url: `${baseUrl}/free`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
@@ -26,17 +35,15 @@ export default function sitemap() {
       changeFrequency: 'yearly',
       priority: 0.2,
     },
-    // Blog posts — uncomment as you publish:
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${baseUrl}/blog/18-month-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/blog/18-month-nap-strike`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog/2-year-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/blog/2-year-old-fighting-bedtime`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog/3-year-sleep-regression`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/blog/when-do-toddlers-stop-napping`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog/sleep-regression-ages`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/blog/toddler-afraid-of-dark`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog/toddler-bedtime-routine`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blog/toddler-waking-at-night`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
   ]
+
+  // Auto-generate blog post URLs from posts.js
+  const blogPages = blogPosts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly',
+    priority: post.category === 'Overview' ? 0.7 : 0.6,
+  }))
+
+  return [...staticPages, ...blogPages]
 }
