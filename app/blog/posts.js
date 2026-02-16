@@ -92,11 +92,12 @@ const blogPosts = [
   },
   {
   slug: '17-month-sleep-regression',
-  title: '', // What's the title?
-  description: '', // Short description
+  title: '17 Month Sleep Regression: Why It Happens & How to Fix It',
+  description:
+    'Is your 17 month old suddenly fighting sleep? The 17 month sleep regression is real — and fixable. Get a step-by-step plan to restore peaceful nights in 5-7 days.',
   category: '18-Month Regression',
-  readTime: '',
-  date: '2025-02-XX',
+  readTime: '15 min read',
+  date: '2026-02-12',
 },
 ]
 
