@@ -14,10 +14,10 @@ export default function BlogLayout({ children }) {
               Blog
             </Link>
             <Link href="/free" className="text-brand-charcoal/70 hover:text-brand-teal transition-colors">
-              Free Checklist
+              Free Resources
             </Link>
             <Link
-              href="/#products"
+              href="/products"
               className="bg-brand-coral hover:bg-brand-coral-dark text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
             >
               Get the Guides
